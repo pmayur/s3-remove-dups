@@ -33,21 +33,21 @@ class IO {
         });
         const arrayWrite = createArrayCsvWriter({
             path: path.resolve('output', 'duplicates.csv'),
-            header: ['List']
-        })
+            header: [ 'List' ]
+        });
         for (const hashKey of duplicatesMap.keys()) {
             const hashValue = duplicatesMap.get(hashKey);
             const record = this.getRecords(hashValue || []);
             await csvWriter.writeRecords(record.objectRecord);
             if(record.arrayRecord.length) {
-                await arrayWrite.writeRecords([record.arrayRecord]);
+                await arrayWrite.writeRecords(record.arrayRecord);
             }
         }
     }
 
     getRecords(value: S3ObjectsList): GetRecords {
         const record: WriteDuplicatesRecords = [];
-        const duplicatesArray: string[] = [];
+        const duplicatesArray: string[][] = [];
 
         let oldestRecord = value[0];
 
@@ -62,7 +62,7 @@ class IO {
         value.forEach((object) => {
             record.push({ currentObject: object.Key, oldestVersion: oldestRecord.Key });
             if(object.Key !== oldestRecord.Key) {
-                duplicatesArray.push(object.Key);
+                duplicatesArray.push([object.Key]);
             }
         });
 

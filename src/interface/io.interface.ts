@@ -3,7 +3,7 @@ interface WriteDuplicatesRecord {
     oldestVersion: string;
 }
 
-export type WriteDuplicatesArray = string[];
+export type WriteDuplicatesArray = string[][];
 
 export type WriteDuplicatesRecords = WriteDuplicatesRecord[];
 
