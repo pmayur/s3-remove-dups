@@ -1,19 +1,22 @@
-import { S3ObjectsList } from "./interface/S3Object";
+import { DuplicatesMap, S3ObjectsList } from "./interface/S3Object";
 import IO from "./io/IO";
 import S3Service from "./s3/s3";
+import Util from "./util";
 
 class Main {
     ioService: IO;
     s3Service: S3Service;
+    utilService: Util;
 
     constructor() {
         this.ioService = new IO();
         this.s3Service = new S3Service();
+        this.utilService = new Util();
     }
 
     public async main(): Promise<void> {
-        const listOfObjects: S3ObjectsList = await this.ioService.parseCSV();
-        const listObjectsV2: S3ObjectsList = await this.s3Service.getAllObjects();
+        const listOfObjectsV2: S3ObjectsList = await this.s3Service.getAllObjects();
+        const duplicatesMap: DuplicatesMap = this.utilService.getHashMapOfDuplicates(listOfObjectsV2);
     }
 }
 
