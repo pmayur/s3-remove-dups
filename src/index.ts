@@ -1,3 +1,6 @@
-import { hello } from "./hello";
+class Main {
+    public static main(): void {
+    }
+}
 
-hello();
+Main.main();
