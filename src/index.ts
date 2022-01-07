@@ -1,6 +1,15 @@
+import IO from "./io/IO";
+
 class Main {
-    public static main(): void {
+    ioService: IO;
+
+    constructor() {
+        this.ioService = new IO();
+    }
+
+    public async main(): Promise<void> {
+        const listOfObjects = await this.ioService.parseCSV();
     }
 }
 
-Main.main();
+new Main().main();
