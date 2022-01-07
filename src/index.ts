@@ -1,3 +1,4 @@
+import { S3ObjectsList } from "./interface/S3Object";
 import IO from "./io/IO";
 import S3Service from "./s3/s3";
 
@@ -11,8 +12,8 @@ class Main {
     }
 
     public async main(): Promise<void> {
-        const listOfObjects = await this.ioService.parseCSV();
-        const listObjectsV2 = await this.s3Service.getAllObjects();
+        const listOfObjects: S3ObjectsList = await this.ioService.parseCSV();
+        const listObjectsV2: S3ObjectsList = await this.s3Service.getAllObjects();
     }
 }
 
