@@ -17,6 +17,7 @@ class Main {
     public async main(): Promise<void> {
         const listOfObjectsV2: S3ObjectsList = await this.s3Service.getAllObjects();
         const duplicatesMap: DuplicatesMap = this.utilService.getHashMapOfDuplicates(listOfObjectsV2);
+        await this.ioService.writeDuplicateMapToCsv(duplicatesMap);
     }
 }
 
