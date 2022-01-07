@@ -17,6 +17,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
+    "aws-sdk": "^2.1052.0",
     "csv-parser": "^3.0.0"
   }
 }

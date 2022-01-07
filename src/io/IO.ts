@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 class IO {
-    headers: string[] = ['Bucket', 'Key', 'Size', 'Date'];
+    headers: string[] = ['Bucket', 'Key', 'Size', 'LastModified'];
 
     async parseCSV(): Promise<any[]> {
         const results: any[] = [];
