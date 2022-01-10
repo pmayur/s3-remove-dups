@@ -25,7 +25,7 @@ class IO {
 
     async writeDuplicateMapToCsv(duplicatesMap: DuplicatesMap) {
         const csvWriter = createObjectCsvWriter({
-            path: path.resolve('output', 'new.csv'),
+            path: path.resolve('output', 'mapping.csv'),
             header: [
                 {id: 'currentObject', title: 'CurrentObject'},
                 {id: 'oldestVersion', title: 'OldestVersion'}
@@ -74,6 +74,11 @@ class IO {
 
     async getKeyNamesFromCsv(path: string): Promise<KeyObject[]> {
         const results: KeyObject[] = [];
+
+        if(!fs.existsSync(path)) {
+            console.log('No Duplicates List file found');
+            return results;
+        }
 
         return new Promise((resolve, reject) => {
             fs.createReadStream(path)

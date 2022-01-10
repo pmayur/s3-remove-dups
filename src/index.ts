@@ -20,7 +20,9 @@ class Main {
         const duplicatesMap: DuplicatesMap = this.utilService.getHashMapOfDuplicates(listOfObjectsV2);
         await this.ioService.writeDuplicateMapToCsv(duplicatesMap);
         const duplicateKeys: KeyObject[] = await this.ioService.getKeyNamesFromCsv(DuplicateIdsPath);
-        await this.s3Service.batchDelete(duplicateKeys);
+        if(duplicateKeys) {
+            await this.s3Service.batchDelete(duplicateKeys);
+        }
     }
 }
 
