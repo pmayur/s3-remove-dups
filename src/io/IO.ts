@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { createObjectCsvWriter, createArrayCsvWriter } from 'csv-writer';
 import { GetRecords, WriteDuplicatesRecords } from '../interface/io.interface';
-import { DuplicatesMap, S3ObjectsList } from '../interface/S3Object';
+import { DuplicatesMap, KeyObject, S3ObjectsList } from '../interface/S3Object';
 
 class IO {
     headers: string[] = ['Bucket', 'Key', 'Size', 'LastModified'];
@@ -33,7 +33,7 @@ class IO {
         });
         const arrayWrite = createArrayCsvWriter({
             path: path.resolve('output', 'duplicates.csv'),
-            header: [ 'List' ]
+            header: [ 'Key' ]
         });
         for (const hashKey of duplicatesMap.keys()) {
             const hashValue = duplicatesMap.get(hashKey);
@@ -70,6 +70,19 @@ class IO {
             objectRecord: record,
             arrayRecord: duplicatesArray
         };
+    }
+
+    async getKeyNamesFromCsv(path: string): Promise<KeyObject[]> {
+        const results: KeyObject[] = [];
+
+        return new Promise((resolve, reject) => {
+            fs.createReadStream(path)
+                .pipe(csv())
+                .on('data', (data: KeyObject) => results.push(data))
+                .on('end', () => {
+                    resolve(results);
+                });
+        })
     }
 }
 
