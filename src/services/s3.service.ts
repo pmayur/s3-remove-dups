@@ -39,6 +39,7 @@ class S3Service {
             this.log.startBatchDelete(index, batch.length);
             const {Deleted, Errors}: S3.DeleteObjectsOutput = await this.s3.deleteObjects(opts).promise();
 
+            this.log.duplicateFindingOperation(index + 1, deleteList.length);
             if(Deleted) {
                 this.log.logDeletedEntries(Deleted.length);
                 for (const object of Deleted) {

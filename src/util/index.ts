@@ -17,6 +17,7 @@ class Util {
             const mapValue = object;
 
             const values = hashMap.get(mapKey);
+            this.log.duplicateFindingOperation(index+1, listOfObjects.length);
             if(values) {
                 hashMap.set(mapKey, [...values, mapValue]);
             } else {

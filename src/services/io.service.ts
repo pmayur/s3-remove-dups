@@ -4,15 +4,14 @@ import { createObjectCsvWriter, createArrayCsvWriter } from 'csv-writer';
 import { DuplicatesMap, S3Object } from '../interfaces/s3.interface';
 import Util from '../util';
 import { LogService, Paths } from '../constants';
-
 class IoService {
     utilService: Util;
-    log: LogService;
+    logService: LogService;
     headers: string[] = ['Bucket', 'Key', 'Size', 'LastModified', 'ETag', 'StorageClass', 'EncryptionStatus', 'IntelligentTieringAccessTier', 'BucketKeyStatus'];
 
     constructor() {
         this.utilService = new Util();
-        this.log = new LogService();
+        this.logService = new LogService();
     }
 
     getObjectsFromInventoryCsv = async (fileName: string = 'file.csv') =>  await this.getObjectsFromCsv(Paths.getInventoryFilePath(fileName), this.headers);
@@ -27,15 +26,19 @@ class IoService {
             return results;
         }
 
-        this.log.startFetchingCsv();
+        let fetched = 0;
+        this.logService.startFetchingCsv();
+
         return new Promise((resolve, reject) => {
             fs.createReadStream(file)
                 .pipe(csv(headers))
                 .on('data', ({Key, ETag, LastModified} : S3Object) => {
+                    fetched++;
+                    this.logService.logObjectsFetchedFromCsv(fetched);
                     results.push({ Key, ETag, LastModified })
                 })
                 .on('end', () => {
-                    this.log.fetchingCompleteCsv();
+                    this.logService.fetchingCompleteCsv();
                     resolve(results);
                 });
 
@@ -63,7 +66,7 @@ class IoService {
         const objectWriter = this.getCsvObjectWriter(Paths.getDuplicateMappingsFilePath());
         const listWriter = this.getCsvKeyListWriter(Paths.getDuplicateKeysListPath());
 
-        this.log.startWritingDuplicatesToCsv(duplicatesMap.size);
+        this.logService.startWritingDuplicatesToCsv(duplicatesMap.size);
         for (const objectKey of duplicatesMap.keys()) {
             const hashValue = duplicatesMap.get(objectKey);
             const record = this.utilService.getWritableRecords(hashValue || []);
@@ -72,7 +75,7 @@ class IoService {
                 await listWriter.writeRecords(record.arrayRecord);
             }
         }
-        this.log.writingToCsvComplete();
+        this.logService.writingToCsvComplete();
     }
 }
 

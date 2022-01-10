@@ -1,5 +1,5 @@
 import path from 'path';
-
+import { stdout as singleLineLog } from 'single-line-log';
 export const DuplicateIdsPath = path.resolve('output', 'duplicates.csv');
 
 export const CONFIG = {
@@ -61,5 +61,26 @@ export class LogService {
     };
     logErrorEntries = (size: number) => {
         console.log(`\t\tError in ${size} entries`)
+    }
+
+    logObjectsFetchedFromCsv = (number: number) => {
+        singleLineLog(`Fetched ${this.toWords(number)} of objects from csv`)
+    }
+
+    duplicateFindingOperation = (completed: number, total: number) => {
+        singleLineLog(`Completed ${(100 * completed/total).toFixed(2)} % of entries (${completed}/${total})\n` )
+    }
+
+    toWords = (labelValue: number) => {
+        // Nine Zeroes for Billions
+        return Math.abs(Number(labelValue)) >= 1.0e+6
+
+        ? Math.abs(Number(labelValue)) / 1.0e+6 + "M"
+        // Three Zeroes for Thousands
+        : Math.abs(Number(labelValue)) >= 1.0e+3
+
+        ? Math.abs(Number(labelValue)) / 1.0e+3 + "K"
+
+        : Math.abs(Number(labelValue));
     }
 }
