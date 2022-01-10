@@ -1,16 +1,16 @@
 import { DuplicateIdsPath } from "./constants";
-import { DuplicatesMap, KeyObject, S3ObjectsList } from "./interface/S3Object";
-import IO from "./io/IO";
-import S3Service from "./s3/s3";
+import { DuplicatesMap, KeyObject, S3ObjectsList } from "./interfaces/s3.interface";
+import IoService from "./services/io.service";
+import S3Service from "./services/s3.service";
 import Util from "./util";
 
 class Main {
-    ioService: IO;
+    ioService: IoService;
     s3Service: S3Service;
     utilService: Util;
 
     constructor() {
-        this.ioService = new IO();
+        this.ioService = new IoService();
         this.s3Service = new S3Service();
         this.utilService = new Util();
     }
@@ -19,7 +19,7 @@ class Main {
         const listOfObjectsV2: S3ObjectsList = await this.s3Service.getAllObjects();
         const duplicatesMap: DuplicatesMap = this.utilService.getHashMapOfDuplicates(listOfObjectsV2);
         await this.ioService.writeDuplicateMapToCsv(duplicatesMap);
-        const duplicateKeys: KeyObject[] = await this.ioService.getKeyNamesFromCsv(DuplicateIdsPath);
+        const duplicateKeys: KeyObject[] = await this.ioService.getDuplicatesListFromCsv();
         if(duplicateKeys) {
             await this.s3Service.batchDelete(duplicateKeys);
         }

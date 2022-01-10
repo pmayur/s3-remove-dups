@@ -13,15 +13,14 @@ export const CONFIG = {
 
 export const Paths = {
     getInventoryFilePath: (file: string = 'file.csv') => path.resolve('files', 'input', file),
-    getDuplicateMappingsFilePath: () => getOutputFilesPath('duplicate'),
-    getSuccessDeletedPath: () => getOutputFilesPath('deleted'),
-    getErrorDeletedPath: () => getOutputFilesPath('error'),
+    getDuplicateMappingsFilePath: () => getOutputFilesPath('duplicate_mappings'),
+    getDuplicateKeysListPath: () => getOutputFilesPath('duplicate_list'),
+    getSuccessDeletedPath: () => getOutputFilesPath('deleted_list'),
+    getErrorDeletedPath: () => getOutputFilesPath('error_list'),
 }
 
 function getOutputFilesPath(type: string) {
-    fs.mkdirSync(path.resolve('files'));
-    fs.mkdirSync(path.resolve('files', 'output'));
-    fs.mkdirSync(path.resolve('files', 'output', `${type}`));
-    return path.resolve('files', 'output', `${type}`, `${new Date().toISOString()}_${type}.csv`)
+    const fileName = type === 'duplicate_mappings' ? `${new Date().toISOString()}_${type}.csv` : type;
+    return path.resolve('files', 'output', fileName)
 }
 
