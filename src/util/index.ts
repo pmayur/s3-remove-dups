@@ -57,6 +57,11 @@ class Util {
             arrayRecord: duplicatesArray
         };
     }
+
+    getKeyNameFromPath = (path: string) => {
+        let pathSplit = path.split('/');
+        return pathSplit[pathSplit.length - 1];
+    }
 }
 
 

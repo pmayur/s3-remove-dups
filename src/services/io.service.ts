@@ -1,21 +1,21 @@
 import csv from 'csv-parser';
 import fs from 'fs';
 import { createObjectCsvWriter, createArrayCsvWriter } from 'csv-writer';
-import { DuplicatesMap } from '../interfaces/s3.interface';
+import { DuplicatesMap, S3Object } from '../interfaces/s3.interface';
 import Util from '../util';
 import { LogService, Paths } from '../constants';
 
 class IoService {
     utilService: Util;
     log: LogService;
-    headers: string[] = ['Bucket', 'Key', 'Size', 'LastModified'];
+    headers: string[] = ['Bucket', 'Key', 'Size', 'LastModified', 'ETag', 'StorageClass', 'EncryptionStatus', 'IntelligentTieringAccessTier', 'BucketKeyStatus'];
 
     constructor() {
         this.utilService = new Util();
         this.log = new LogService();
     }
 
-    getObjectsFromInventoryCsv = async () =>  await this.getObjectsFromCsv(Paths.getInventoryFilePath(), this.headers);
+    getObjectsFromInventoryCsv = async (fileName: string = 'file.csv') =>  await this.getObjectsFromCsv(Paths.getInventoryFilePath(fileName), this.headers);
 
     getDuplicatesListFromCsv = async () =>  await this.getObjectsFromCsv(Paths.getDuplicateKeysListPath());
 
@@ -27,11 +27,15 @@ class IoService {
             return results;
         }
 
+        this.log.startFetchingCsv();
         return new Promise((resolve, reject) => {
             fs.createReadStream(file)
                 .pipe(csv(headers))
-                .on('data', (data) => results.push(data))
+                .on('data', ({Key, ETag, LastModified} : S3Object) => {
+                    results.push({ Key, ETag, LastModified })
+                })
                 .on('end', () => {
+                    this.log.fetchingCompleteCsv();
                     resolve(results);
                 });
 

@@ -16,12 +16,13 @@ export const Paths = {
 }
 
 function getOutputFilesPath(type: string) {
-    const fileName = type === 'duplicate_mappings' ? `${new Date().toISOString()}_${type}.csv` : type;
+    const fileName = type === 'duplicate_mappings' ? `${new Date().toISOString()}_${type}.csv` : `${type}.csv`;
     return path.resolve('files', 'output', fileName)
 }
 
 export class LogService {
     private fetching = "Fetching Records from S3";
+    private fetchingCSV = "Fetching Records from CSV";
     private findingDuplicates = "Finding Duplicates from the array";
     private writingDuplicates = "Writing Duplicates to CSV file";
     private deleteProcess = "Deleting Duplicates";
@@ -39,6 +40,9 @@ export class LogService {
 
     startFetching = () => this.startLog(this.fetching);
     fetchingComplete = () => this.endLog(this.fetching);
+
+    startFetchingCsv = () => this.startLog(this.fetchingCSV);
+    fetchingCompleteCsv = () => this.endLog(this.fetchingCSV);
 
     startFindingDuplicates = (size: number) => this.startLog(this.findingDuplicates, this.findingDuplicates + ` of size ${size}`);
     findingComplete = () => this.endLog(this.findingDuplicates);
