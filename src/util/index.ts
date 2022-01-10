@@ -1,10 +1,17 @@
+import { LogService } from "../constants";
 import { GetRecords, WriteDuplicatesRecords } from "../interfaces/io.interface";
 import { DuplicatesMap, S3Object, S3ObjectsList } from "../interfaces/s3.interface";
 
 class Util {
-    getHashMapOfDuplicates(listOfObjects: S3ObjectsList): DuplicatesMap {
+    log: LogService;
+    constructor() {
+        this.log = new LogService();
+    }
+
+    createHashMapOfDuplicates(listOfObjects: S3ObjectsList): DuplicatesMap {
         let hashMap: DuplicatesMap = new Map();
 
+        this.log.startFindingDuplicates(listOfObjects.length);
         listOfObjects.forEach((object: S3Object, index: number) => {
             const mapKey = object.ETag;
             const mapValue = object;
@@ -16,6 +23,7 @@ class Util {
                 hashMap.set(mapKey, [mapValue]);
             }
         })
+        this.log.findingComplete();
 
         return hashMap;
     }
