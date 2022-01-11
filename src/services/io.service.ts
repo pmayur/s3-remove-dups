@@ -3,7 +3,7 @@ import fs from 'fs';
 import { createObjectCsvWriter, createArrayCsvWriter } from 'csv-writer';
 import { DuplicatesMap, S3Object } from '../interfaces/s3.interface';
 import Util from '../util';
-import { LogService, Paths } from '../constants';
+import { FILE_NAMES, LogService, Paths } from '../constants';
 class IoService {
     utilService: Util;
     logService: LogService;
@@ -14,9 +14,9 @@ class IoService {
         this.logService = new LogService();
     }
 
-    getObjectsFromInventoryCsv = async (fileName: string = 'file.csv') =>  await this.getObjectsFromCsv(Paths.getInventoryFilePath(fileName), this.headers);
+    getObjectsFromInventoryCsv = async (fileName: string = FILE_NAMES.INVENTORY_CSV) =>  await this.getObjectsFromCsv(Paths.getInventoryFilePath(fileName), this.headers);
 
-    getDuplicatesListFromCsv = async () =>  await this.getObjectsFromCsv(Paths.getDuplicateKeysListPath());
+    getDuplicatesListFromCsv = async (fileName: string = FILE_NAMES.DUPLICATE_LISTS_CSV) =>  await this.getObjectsFromCsv(Paths.getDuplicateKeysListPath(fileName));
 
     private async getObjectsFromCsv(file: string, headers?: string[]): Promise<any[]> {
         const results: any[] = [];

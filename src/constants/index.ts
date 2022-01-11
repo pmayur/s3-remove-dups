@@ -1,22 +1,29 @@
 import path from 'path';
 import { stdout as singleLineLog } from 'single-line-log';
-export const DuplicateIdsPath = path.resolve('output', 'duplicates.csv');
 
 export const CONFIG = {
     ITEMS_PER_BATCH_DELETE:  1000,
     BUCKET_NAME: "img-compression"
 }
 
+export const FILE_NAMES = {
+    INVENTORY_CSV: 'file.csv',
+    DUPLICATE_MAPPINGS_CSV: 'duplicate_mappings.csv',
+    DUPLICATE_LISTS_CSV: 'duplicate_list.csv',
+    DELETED_LIST_CSV: 'deleted_list.csv',
+    ERROR_LIST_CSV: 'error_list.csv'
+}
+
 export const Paths = {
-    getInventoryFilePath: (file: string = 'file.csv') => path.resolve('files', 'input', file),
-    getDuplicateMappingsFilePath: () => getOutputFilesPath('duplicate_mappings'),
-    getDuplicateKeysListPath: () => getOutputFilesPath('duplicate_list'),
-    getSuccessDeletedPath: () => getOutputFilesPath('deleted_list'),
-    getErrorDeletedPath: () => getOutputFilesPath('error_list'),
+    getInventoryFilePath: (file: string = FILE_NAMES.INVENTORY_CSV) => path.resolve('files', 'input', file),
+    getDuplicateMappingsFilePath: (file: string = FILE_NAMES.DUPLICATE_MAPPINGS_CSV) => getOutputFilesPath(file),
+    getDuplicateKeysListPath: (file: string = FILE_NAMES.DUPLICATE_LISTS_CSV) => getOutputFilesPath(file),
+    getSuccessDeletedPath: (file: string = FILE_NAMES.DELETED_LIST_CSV) => getOutputFilesPath(file),
+    getErrorDeletedPath: (file: string = FILE_NAMES.ERROR_LIST_CSV) => getOutputFilesPath(file),
 }
 
 function getOutputFilesPath(type: string) {
-    const fileName = type === 'duplicate_mappings' ? `${new Date().toISOString()}_${type}.csv` : `${type}.csv`;
+    const fileName = type === FILE_NAMES.DUPLICATE_MAPPINGS_CSV ? `${new Date().toISOString()}_${type}` : `${type}`;
     return path.resolve('files', 'output', fileName)
 }
 
