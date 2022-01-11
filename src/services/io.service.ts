@@ -14,9 +14,21 @@ class IoService {
         this.logService = new LogService();
     }
 
-    getObjectsFromInventoryCsv = async (fileName: string = FILE_NAMES.INVENTORY_CSV) =>  await this.getObjectsFromCsv(Paths.getInventoryFilePath(fileName), this.headers);
+    getObjectsFromInventoryCsv = async (
+        fileName: string = FILE_NAMES.INVENTORY_CSV,
+        headers: string[] = this.headers
+    ) =>
+        await this.getObjectsFromCsv(
+            Paths.getInventoryFilePath(fileName),
+            headers
+        );
 
-    getDuplicatesListFromCsv = async (fileName: string = FILE_NAMES.DUPLICATE_LISTS_CSV) =>  await this.getObjectsFromCsv(Paths.getDuplicateKeysListPath(fileName));
+    getDuplicatesListFromCsv = async (
+        fileName: string = FILE_NAMES.DUPLICATE_LISTS_CSV
+    ) =>
+        await this.getObjectsFromCsv(
+            Paths.getDuplicateKeysListPath(fileName)
+        );
 
     private async getObjectsFromCsv(file: string, headers?: string[]): Promise<any[]> {
         const results: any[] = [];
@@ -32,10 +44,10 @@ class IoService {
         return new Promise((resolve, reject) => {
             fs.createReadStream(file)
                 .pipe(csv(headers))
-                .on('data', ({Key, ETag, LastModified} : S3Object) => {
+                .on('data', ({Key, ETag, LastModified, Size} : S3Object) => {
                     fetched++;
                     this.logService.logObjectsFetchedFromCsv(fetched);
-                    results.push({ Key, ETag, LastModified })
+                    results.push({ Key, ETag, LastModified, Size })
                 })
                 .on('end', () => {
                     this.logService.fetchingCompleteCsv();
@@ -56,8 +68,10 @@ class IoService {
         return createObjectCsvWriter({
             path: path,
             header: [
-                {id: 'currentObject', title: 'CurrentObject'},
-                {id: 'oldestVersion', title: 'OldestVersion'}
+                {id: 'originalKey', title: 'OriginalKey'},
+                {id: 'originalSize', title: 'OriginalSize'},
+                {id: 'originalETag', title: 'OriginalETag'},
+                {id: 'retainedKey', title: 'RetainedKey'},
             ]
         })
     }
@@ -68,11 +82,14 @@ class IoService {
 
         this.logService.startWritingDuplicatesToCsv(duplicatesMap.size);
         for (const objectKey of duplicatesMap.keys()) {
-            const hashValue = duplicatesMap.get(objectKey);
-            const record = this.utilService.getWritableRecords(hashValue || []);
-            await objectWriter.writeRecords(record.objectRecord);
-            if(record.arrayRecord.length) {
-                await listWriter.writeRecords(record.arrayRecord);
+            const hashValue = duplicatesMap.get(objectKey) || [];
+
+            const retainedRecord = this.utilService.getOldestRecord(hashValue);
+            const { mappingRecordList, deleteKeysList } = this.utilService.getRecordsForPersisting(hashValue, retainedRecord);
+
+            await objectWriter.writeRecords(mappingRecordList);
+            if(deleteKeysList.length) {
+                await listWriter.writeRecords(deleteKeysList);
             }
         }
         this.logService.writingToCsvComplete();

@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "tsc",
     "build": "rm -rf ./dist && tsc",
-    "start": "npm run build && node dist/index.js"
+    "start": "npm run build && node dist/index.js",
+    "clean": "rm -rf ./files/output && mkdir files/output",
+    "start:clean": "npm run clean && npm run start"
   },
   "keywords": [],
   "author": "",

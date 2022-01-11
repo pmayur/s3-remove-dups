@@ -1,5 +1,5 @@
 import { LogService } from "../constants";
-import { GetRecords, WriteDuplicatesRecords } from "../interfaces/io.interface";
+import { GetRecords, MappingRecordsList } from "../interfaces/io.interface";
 import { DuplicatesMap, S3Object, S3ObjectsList } from "../interfaces/s3.interface";
 
 class Util {
@@ -29,12 +29,8 @@ class Util {
         return hashMap;
     }
 
-    getWritableRecords(value: S3ObjectsList): GetRecords {
-        const record: WriteDuplicatesRecords = [];
-        const duplicatesArray: string[][] = [];
-
+    getOldestRecord(value: S3ObjectsList): S3Object {
         let oldestRecord = value[0];
-
         value.forEach((object) => {
             let oldestRecordModifiedDate = Date.parse(oldestRecord.LastModified);
             let currentObjectModifiedDate = Date.parse(object.LastModified);
@@ -42,22 +38,46 @@ class Util {
                 oldestRecord = object;
             }
         });
+        return oldestRecord;
 
-        value.forEach((object) => {
-            record.push({
-                currentObject: object.Key,
-                oldestVersion: oldestRecord.Key
-            });
-            if(object.Key !== oldestRecord.Key) {
-                duplicatesArray.push([object.Key]);
+    }
+
+    getRecordsForPersisting(value: S3ObjectsList, retainedRecord: S3Object) {
+        const mappingRecordList: MappingRecordsList = [];
+        const deleteKeysList: string[][] = [];
+
+        value.map((object: S3Object) => {
+            const mapping = {
+                originalETag: object.ETag,
+                originalKey: object.Key,
+                originalSize: object.Size,
+                retainedKey: retainedRecord.Key
             }
+            const isFolder = this.isFolder(object.Key)
+            if (parseInt(object.Size) === 0) {
+                if(isFolder) {
+                    mapping.retainedKey = "FOLDER";
+                } else {
+                    mapping.retainedKey = "CORRUPT";
+                    deleteKeysList.push([object.Key]);
+                }
+            } else {
+                if(object.Key !== retainedRecord.Key) {
+                    deleteKeysList.push([object.Key])
+                }
+            }
+            mappingRecordList.push(mapping);
         });
 
         return {
-            objectRecord: record,
-            arrayRecord: duplicatesArray
-        };
+            mappingRecordList,
+            deleteKeysList
+        }
     }
+
+    isFolder(key: string) {
+        return key[key.length - 1] === "/";
+    };
 
     getKeyNameFromPath = (path: string) => {
         let pathSplit = path.split('/');

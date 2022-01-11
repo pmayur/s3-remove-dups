@@ -1,13 +1,15 @@
-interface WriteDuplicatesRecord {
-    currentObject: string;
-    oldestVersion: string;
+interface MappingRecord {
+    originalKey: string;
+    originalSize: string;
+    originalETag: string;
+    retainedKey: string;
 }
 
-export type WriteDuplicatesArray = string[][];
+export type DeleteKeysList = string[][];
 
-export type WriteDuplicatesRecords = WriteDuplicatesRecord[];
+export type MappingRecordsList = MappingRecord[];
 
 export type GetRecords = {
-    objectRecord: WriteDuplicatesRecords,
-    arrayRecord: WriteDuplicatesArray
+    objectRecord: MappingRecordsList,
+    arrayRecord: DeleteKeysList
 }
