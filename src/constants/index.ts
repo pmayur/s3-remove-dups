@@ -71,11 +71,11 @@ export class LogService {
     }
 
     logObjectsFetchedFromCsv = (number: number) => {
-        singleLineLog(`Fetched ${this.toWords(number)} of objects from csv`)
+        singleLineLog(`Fetched ${this.toWords(number)} objects from csv`)
     }
 
     duplicateFindingOperation = (completed: number, total: number) => {
-        singleLineLog(`Completed ${(100 * completed/total).toFixed(2)} % of entries (${completed}/${total})\n` )
+        singleLineLog(`Completed ${(100 * completed/total).toFixed(2)} % entries (${completed}/${total})\n` )
     }
 
     toWords = (labelValue: number) => {

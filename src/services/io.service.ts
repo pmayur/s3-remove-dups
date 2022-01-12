@@ -80,6 +80,9 @@ class IoService {
         const objectWriter = this.getCsvObjectWriter(Paths.getDuplicateMappingsFilePath());
         const listWriter = this.getCsvKeyListWriter(Paths.getDuplicateKeysListPath());
 
+        const size = duplicatesMap.size;
+        let completed = 0;
+
         this.logService.startWritingDuplicatesToCsv(duplicatesMap.size);
         for (const objectKey of duplicatesMap.keys()) {
             const hashValue = duplicatesMap.get(objectKey) || [];
@@ -91,6 +94,8 @@ class IoService {
             if(deleteKeysList.length) {
                 await listWriter.writeRecords(deleteKeysList);
             }
+            completed ++;
+            this.logService.duplicateFindingOperation(completed, size);
         }
         this.logService.writingToCsvComplete();
     }
