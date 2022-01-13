@@ -20,8 +20,10 @@ class Util {
             this.log.duplicateFindingOperation(index+1, listOfObjects.length);
             if(values) {
                 hashMap.set(mapKey, [...values, mapValue]);
+                metrics.duplicateEntry(object);
             } else {
                 hashMap.set(mapKey, [mapValue]);
+                metrics.uniqueEntry(object);
             }
         })
         this.log.findingComplete();
@@ -42,28 +44,30 @@ class Util {
 
     }
 
-    getRecordsForPersisting(value: S3ObjectsList, retainedRecord: S3Object) {
+    getRecordsForPersisting(objectsList: S3ObjectsList, retainedRecord: S3Object) {
         const mappingRecordList: MappingRecordsList = [];
         const deleteKeysList: string[][] = [];
 
-        value.map((object: S3Object) => {
+        objectsList.forEach((object: S3Object) => {
             const mapping = {
                 originalETag: object.ETag,
                 originalKey: object.Key,
                 originalSize: object.Size,
                 retainedKey: retainedRecord.Key
             }
-            const isFolder = this.isFolder(object.Key)
+            const isFolder = Util.isFolder(object.Key)
             if (parseInt(object.Size) === 0) {
                 if(isFolder) {
                     mapping.retainedKey = "FOLDER";
                 } else {
                     mapping.retainedKey = "CORRUPT";
                     deleteKeysList.push([object.Key]);
+                    metrics.deleteEntry(object);
                 }
             } else {
                 if(object.Key !== retainedRecord.Key) {
                     deleteKeysList.push([object.Key])
+                    metrics.deleteEntry(object);
                 }
             }
             mappingRecordList.push(mapping);
@@ -75,7 +79,7 @@ class Util {
         }
     }
 
-    isFolder(key: string) {
+    static isFolder(key: string) {
         return key[key.length - 1] === "/";
     };
 

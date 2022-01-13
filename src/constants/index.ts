@@ -11,7 +11,8 @@ export const FILE_NAMES = {
     DUPLICATE_MAPPINGS_CSV: 'duplicate_mappings.csv',
     DUPLICATE_LISTS_CSV: 'duplicate_list.csv',
     DELETED_LIST_CSV: 'deleted_list.csv',
-    ERROR_LIST_CSV: 'error_list.csv'
+    ERROR_LIST_CSV: 'error_list.csv',
+    METRICS_JSON: 'metrics.json'
 }
 
 export const Paths = {
@@ -20,6 +21,7 @@ export const Paths = {
     getDuplicateKeysListPath: (file: string = FILE_NAMES.DUPLICATE_LISTS_CSV) => getOutputFilesPath(file),
     getSuccessDeletedPath: (file: string = FILE_NAMES.DELETED_LIST_CSV) => getOutputFilesPath(file),
     getErrorDeletedPath: (file: string = FILE_NAMES.ERROR_LIST_CSV) => getOutputFilesPath(file),
+    metricsFilePath: (file: string = FILE_NAMES.METRICS_JSON) => path.resolve('files', 'output', FILE_NAMES.METRICS_JSON)
 }
 
 function getOutputFilesPath(type: string) {
