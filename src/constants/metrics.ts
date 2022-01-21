@@ -21,6 +21,10 @@ class Metrics {
     private deleteCorruptFileCount: number = 0;
     private deleteFilesSize: number = 0;
 
+    private moreThan128KBCount: number = 0;
+    private olderThan30DaysCount: number = 0;
+    private validTrasferableFiles: number = 0;
+
     duplicateEntry = (entry: S3Object) => {
         this.duplicateCount ++;
         const size = parseInt(entry.Size.trim())
@@ -33,6 +37,7 @@ class Metrics {
         const size = parseInt(entry.Size.trim());
         this.uniqueSize += size;
         this.objectEntry(size, entry.Key);
+        this.checkValidTransitionFile(entry);
     }
 
     deleteEntry = (entry: S3Object) => {
@@ -44,6 +49,17 @@ class Metrics {
         } else {
             this.deleteFileCount ++;
         }
+    }
+
+    checkValidTransitionFile(entry: S3Object) {
+        const isMoreThan128KB = parseInt(entry.Size.trim()) > 128 * 1000;
+        const date30DaysAgo = new Date().getTime() - (30 * 24 * 60 * 60 * 100);
+        const isOlderThan30Days = Date.parse(entry.LastModified) < date30DaysAgo;
+
+        if(isOlderThan30Days) this.olderThan30DaysCount ++;
+        if(isMoreThan128KB) this.moreThan128KBCount ++;
+
+        if(isOlderThan30Days && isMoreThan128KB) this.validTrasferableFiles++;
     }
 
     folderEntry(size: number) {
@@ -139,6 +155,11 @@ class Metrics {
                 countReadable: Metrics.formatNumber(this.totalDeleteCount),
                 size: this.deleteFilesSize,
                 readable: Metrics.formatBytes(this.deleteFilesSize)
+            },
+            transferData: {
+                totalValid: this.validTrasferableFiles,
+                moreThan128kb: this.moreThan128KBCount,
+                olderThan30Days: this.olderThan30DaysCount,
             }
         };
         fs.writeFileSync(Paths.metricsFilePath(), JSON.stringify(records, null, 4));
