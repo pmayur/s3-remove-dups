@@ -44,10 +44,10 @@ class IoService {
         return new Promise((resolve, reject) => {
             fs.createReadStream(file)
                 .pipe(csv(headers))
-                .on('data', ({Key, ETag, LastModified, Size} : S3Object) => {
+                .on('data', ({Key, ETag, LastModified, Size, StorageClass} : S3Object) => {
                     fetched++;
                     this.logService.logObjectsFetchedFromCsv(fetched);
-                    results.push({ Key, ETag, LastModified, Size })
+                    results.push({ Key, ETag, LastModified, Size, StorageClass })
                 })
                 .on('end', () => {
                     this.logService.fetchingCompleteCsv();

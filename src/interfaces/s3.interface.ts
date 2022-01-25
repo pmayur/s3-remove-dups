@@ -4,7 +4,7 @@ export interface S3Object {
     Size: string;
     LastModified: string;
     ETag: string;
-    StorageClass?: string;
+    StorageClass: string;
 }
 
 export type S3ObjectsList = S3Object[];
