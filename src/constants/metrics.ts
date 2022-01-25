@@ -22,6 +22,8 @@ class Metrics {
     private deleteFilesSize: number = 0;
 
     private moreThan128KBCount: number = 0;
+    private lessThan128KBCount: number = 0;
+    private tota128KBFilesSize: number = 0;
     private olderThan30DaysCount: number = 0;
     private validTrasferableFiles: number = 0;
 
@@ -57,7 +59,12 @@ class Metrics {
         const isOlderThan30Days = Date.parse(entry.LastModified) < date30DaysAgo;
 
         if(isOlderThan30Days) this.olderThan30DaysCount ++;
-        if(isMoreThan128KB) this.moreThan128KBCount ++;
+        if(isMoreThan128KB) {
+            this.moreThan128KBCount ++
+        } else {
+            this.lessThan128KBCount ++
+            this.tota128KBFilesSize += parseInt(entry.Size.trim());
+        }
 
         if(isOlderThan30Days && isMoreThan128KB) this.validTrasferableFiles++;
     }
@@ -113,6 +120,7 @@ class Metrics {
     }
 
     print = async () => {
+        const lessThan128KBAvg = this.tota128KBFilesSize / this.lessThan128KBCount;
         const records = {
             mappings: {
                 duplicates: {
@@ -159,6 +167,9 @@ class Metrics {
             transferData: {
                 totalValid: this.validTrasferableFiles,
                 moreThan128kb: this.moreThan128KBCount,
+                lessThan128kb: this.lessThan128KBCount,
+                smallFilesAverage: lessThan128KBAvg,
+                smallFilesAverageReadable: Metrics.formatBytes(lessThan128KBAvg),
                 olderThan30Days: this.olderThan30DaysCount,
             }
         };
