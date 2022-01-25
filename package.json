@@ -9,7 +9,8 @@
     "build": "rm -rf ./dist && tsc",
     "start": "npm run build && node dist/index.js",
     "clean": "rm -rf ./files/output && mkdir files/output",
-    "start:clean": "npm run clean && npm run start"
+    "start:clean": "npm run clean && npm run start",
+    "zcat:combine": "for i in *.gz; do zcat < \"$i\" | sed -n '2,$p'; done > inventory.csv"
   },
   "keywords": [],
   "author": "",
