@@ -20,10 +20,10 @@ class Util {
             this.log.duplicateFindingOperation(index+1, listOfObjects.length);
             if(values) {
                 hashMap.set(mapKey, [...values, mapValue]);
-                metrics.duplicateEntry(object);
+                metrics.countDuplicate(object);
             } else {
                 hashMap.set(mapKey, [mapValue]);
-                metrics.uniqueEntry(object);
+                metrics.countUnique(object);
             }
         })
         this.log.findingComplete();
@@ -62,12 +62,12 @@ class Util {
                 } else {
                     mapping.retainedKey = "CORRUPT";
                     deleteKeysList.push([object.Key]);
-                    metrics.deleteEntry(object);
+                    metrics.countToBeDeleted(object);
                 }
             } else {
                 if(object.Key !== retainedRecord.Key) {
                     deleteKeysList.push([object.Key])
-                    metrics.deleteEntry(object);
+                    metrics.countToBeDeleted(object);
                 }
             }
             mappingRecordList.push(mapping);

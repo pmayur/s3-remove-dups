@@ -27,22 +27,25 @@ class Metrics {
     private olderThan30DaysCount: number = 0;
     private validTrasferableFiles: number = 0;
 
-    duplicateEntry = (entry: S3Object) => {
+    private storageClassCounts: any = {};
+
+    countDuplicate = (entry: S3Object) => {
         this.duplicateCount ++;
         const size = parseInt(entry.Size.trim())
         this.duplicateSize += size;
-        this.objectEntry(size, entry.Key);
+        this.countS3Object(entry, true);
+        this.checkValidTransitionObject(entry);
     }
 
-    uniqueEntry = (entry: S3Object) => {
+    countUnique = (entry: S3Object) => {
         this.uniqueCount ++;
         const size = parseInt(entry.Size.trim());
         this.uniqueSize += size;
-        this.objectEntry(size, entry.Key);
-        this.checkValidTransitionFile(entry);
+        this.countS3Object(entry);
+        this.checkValidTransitionObject(entry);
     }
 
-    deleteEntry = (entry: S3Object) => {
+    countToBeDeleted = (entry: S3Object) => {
         this.totalDeleteCount ++;
         const size = parseInt(entry.Size.trim());
         this.deleteFilesSize += size;
@@ -53,7 +56,7 @@ class Metrics {
         }
     }
 
-    checkValidTransitionFile(entry: S3Object) {
+    checkValidTransitionObject(entry: S3Object) {
         const isMoreThan128KB = parseInt(entry.Size.trim()) > 128 * 1000;
         const date30DaysAgo = new Date().getTime() - (30 * 24 * 60 * 60 * 100);
         const isOlderThan30Days = Date.parse(entry.LastModified) < date30DaysAgo;
@@ -69,28 +72,50 @@ class Metrics {
         if(isOlderThan30Days && isMoreThan128KB) this.validTrasferableFiles++;
     }
 
-    folderEntry(size: number) {
+    private countFolder(size: number) {
         this.folderCount ++;
         this.foldersTotalSize += size;
     }
 
-    corruptFileEntry(size: number) {
+    private countCorruptFile(size: number) {
         this.corruptFilesCount ++;
         this.corruptFilesSize += size;
     }
 
-    normalEntry(size: number) {
+    private countTotal(size: number) {
         this.totalCount ++;
         this.totalSize += size;
     }
 
-    objectEntry(size: number, Key: string) {
-        this.normalEntry(size);
+    private countStorageClass(entry: S3Object, isDuplicate: boolean = false) {
+        const { StorageClass } = entry;
+        if(this.storageClassCounts.hasOwnProperty(StorageClass)) {
+            this.storageClassCounts[StorageClass].count ++;
+        } else {
+            this.storageClassCounts[StorageClass] = {
+                count: 1,
+                duplicate: 0,
+                lessThan128kb: 0
+            }
+        }
+        if(!Metrics.greaterThan128KB(entry.Size)) {
+            this.storageClassCounts[StorageClass].lessThan128kb ++;
+        }
+        if(isDuplicate) {
+            this.storageClassCounts[StorageClass].duplicate ++;
+        }
+    }
+
+    private countS3Object(entry: S3Object, isDuplicate: boolean = false) {
+        const {Size, Key} = entry;
+        let size = parseInt(Size.trim());
+        this.countTotal(size);
+        this.countStorageClass(entry, isDuplicate)
         if(size == 0) {
             if(Util.isFolder(Key)) {
-                this.folderEntry(size);
+                this.countFolder(size);
             } else {
-                this.corruptFileEntry(size);
+                this.countCorruptFile(size);
             }
         }
     }
@@ -117,6 +142,14 @@ class Metrics {
         ? Math.abs(Number(labelValue)) / 1.0e+3 + "K"
 
         : Math.abs(Number(labelValue));
+    }
+
+    static greaterThan128KB = (Size: string): boolean => {
+        return Metrics.toInt(Size) > 128 * 1000;
+    }
+
+    static toInt = (size: string): number => {
+        return parseInt(size.trim());
     }
 
     print = async () => {
@@ -171,7 +204,8 @@ class Metrics {
                 smallFilesAverage: lessThan128KBAvg,
                 smallFilesAverageReadable: Metrics.formatBytes(lessThan128KBAvg),
                 olderThan30Days: this.olderThan30DaysCount,
-            }
+            },
+            storageClass: this.storageClassCounts
         };
         fs.writeFileSync(Paths.metricsFilePath(), JSON.stringify(records, null, 4));
     }
