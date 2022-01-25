@@ -1,3 +1,4 @@
+import Metrics from "./constants/metrics";
 import { DuplicatesMap, KeyObject, S3ObjectsList } from "./interfaces/s3.interface";
 import IoService from "./services/io.service";
 import S3Service from "./services/s3.service";
@@ -15,9 +16,11 @@ class Main {
     }
 
     public async main(): Promise<void> {
-        const listOfObjectsV2: S3ObjectsList = await this.s3Service.getAllObjects();
+        global.metrics = new Metrics();
+        const listOfObjectsV2: S3ObjectsList = await this.ioService.getObjectsFromInventoryCsv('output.csv');
         const duplicatesMap: DuplicatesMap = this.utilService.createHashMapOfDuplicates(listOfObjectsV2);
         await this.ioService.writeDuplicateMapToCsv(duplicatesMap);
+        metrics.print();
         const duplicateKeys: KeyObject[] = await this.ioService.getDuplicatesListFromCsv();
         if(duplicateKeys) {
             await this.s3Service.batchDelete(duplicateKeys);
